@@ -17,7 +17,7 @@ namespace Lab1_SQL.Utilities
             {
                 con.Open();
 
-                using (SqlCommand com = new SqlCommand("SELECT StaffFirstName, StaffLastName, SSN, Address, PhoneNo, Role, Class FROM Staff ORDER BY Role ASC", con))
+                using (SqlCommand com = new SqlCommand("SELECT StaffFirstName, StaffLastName, SSN, Address, PhoneNo, Role, Class FROM Staff ORDER BY Role ASC @Where", con))
                 {
                     using (SqlDataReader reader = com.ExecuteReader())
                     {

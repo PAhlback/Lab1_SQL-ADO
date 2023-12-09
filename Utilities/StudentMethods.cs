@@ -21,13 +21,33 @@ namespace Lab1_SQL.Utilities
                 {
                     using (SqlDataReader reader = command.ExecuteReader())
                     {
+                        List<Student> students = new List<Student>();
 
                         while (reader.Read())
                         {
-                            Console.WriteLine($"\t{reader.GetString(0)} {reader.GetString(1)}, {reader.GetString(2)}" +
-                                $"\n\tClass: Class{reader.GetInt32(5)}" +
-                                $"\n\tAddress: {reader.GetString(3)}" +
-                                $"\n\tPhone: {reader.GetString(4)}");
+                            if (!reader.IsDBNull(5))
+                            {
+                                students.Add(new Student(reader.GetString(0), reader.GetString(1), reader.GetString(2), reader.GetString(3),
+                                reader.GetString(4), reader.GetInt32(5)));
+                            }
+                            else
+                            {
+                                students.Add(new Student(reader.GetString(0), reader.GetString(1), reader.GetString(2), reader.GetString(3),
+                                reader.GetString(4)));
+                            }
+                        }
+
+                        students = SortByName(students);
+
+                        foreach (Student st in students) 
+                        {
+                            Console.WriteLine($"\t{st.LastName}, {st.FirstName} {st.SSN}" +
+                                $"\n\tAddress: {st.Address}" +
+                                $"\n\tPhone: {st.PhoneNo}");
+                            if (!string.IsNullOrEmpty(st.Class.ToString()))
+                            {
+                                Console.WriteLine($"\tClass: Class{st.Class}");
+                            }
                             Console.WriteLine("\t=============================");
                         }
                     }
@@ -148,6 +168,26 @@ namespace Lab1_SQL.Utilities
                 }
             }
             return true;
+        }
+
+        private static List<Student> SortByName(List<Student> students)
+        {
+            Console.Write("Sort by last(l) or first(f) name (leave blank for default)? ");
+            string nameSort = Console.ReadLine();
+            Console.Write("Sort students ascending(a) or descending(d) (leave blank for default)? ");
+            string sortInput = Console.ReadLine();
+
+            switch (nameSort)
+            {
+                case "f" when sortInput == "d":
+                    return students.OrderByDescending(s => s.FirstName).ToList();
+                case "f" when sortInput == "a":
+                    return students.OrderBy(s => s.FirstName).ToList();
+                case "l" when sortInput == "d":
+                    return students.OrderByDescending(s => s.LastName).ToList();
+                default:
+                    return students.OrderBy(s => s.LastName).ToList();
+            }
         }
     }
 }

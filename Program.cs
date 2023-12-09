@@ -54,7 +54,5 @@ namespace Lab1_SQL
             Console.ReadKey();
             Console.Clear();
         }
-
-        
     }
 }

@@ -14,6 +14,26 @@ namespace Lab1_SQL.Models
         public string Address { get; set; }
         public string PhoneNo { get; set; }
         public int Class { get; set; }
-
+        public Student()
+        {
+            
+        }
+        public Student(string firstName, string lastName, string ssn, string address, string phoneNo)
+        {
+            FirstName = firstName;
+            LastName = lastName;
+            SSN = ssn;
+            Address = address;
+            PhoneNo = phoneNo;
+        }
+        public Student(string firstName, string lastName, string ssn, string address, string phoneNo, int c)
+        {
+            FirstName = firstName;
+            LastName = lastName;
+            SSN = ssn;
+            Address = address;
+            PhoneNo = phoneNo;
+            Class = c;
+        }
     }
 }
