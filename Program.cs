@@ -36,12 +36,13 @@ namespace Lab1_SQL
                         StaffMethods.GetStaff();
                         break;
                     case 5:
-                        Grades.ShowAllGradesFromLastMonth();
+                        GradesMethods.ShowAllGradesFromLastMonth();
                         break;
                     case 6:
-                        
+                        GradesMethods.GradeStatisticsByCourse();
                         break;
                     case 7:
+                        StudentMethods.AddStudent();
                         break;
                 }
             }
