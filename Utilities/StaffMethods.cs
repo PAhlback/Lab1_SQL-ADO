@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Linq;
+using System.Reflection.Metadata;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -17,13 +18,20 @@ namespace Lab1_SQL.Utilities
             {
                 con.Open();
 
-                using (SqlCommand com = new SqlCommand("SELECT StaffFirstName, StaffLastName, SSN, Address, PhoneNo, Role, Class FROM Staff ORDER BY Role ASC @Where", con))
+                // Lets user decide if they want to view all staff, or a certain role. Then asks for sorting order.
+                string whereSelection = GetSortByRole();
+                string sort = GetSorting();
+                
+                using (SqlCommand cmd = new SqlCommand(@$"SELECT StaffFirstName, StaffLastName, SSN, Address, PhoneNo, Role, Class FROM Staff {whereSelection} ORDER BY {sort}", con))
                 {
-                    using (SqlDataReader reader = com.ExecuteReader())
+
+                    using (SqlDataReader reader = cmd.ExecuteReader())
                     {
+                        Console.Clear();
+                        Console.WriteLine();
                         while (reader.Read())
                         {
-                            Console.WriteLine($"\t{reader.GetString(0)} {reader.GetString(1)}, " +
+                            Console.WriteLine($"\t{reader.GetString(1)}, {reader.GetString(0)}, " +
                                 $"{reader.GetString(2)}" +
                                 $"\n\tAddress: {reader.GetString(3)}" +
                                 $"\n\tPhone: {reader.GetString(4)}" +
@@ -104,6 +112,55 @@ namespace Lab1_SQL.Utilities
             }
             Console.WriteLine("Staff added to database!");
             Program.EndMessage();
+        }
+
+        private static string GetSorting()
+        {
+            Console.Write("Sort by last(l) or first(f) name (leave blank for default)? ");
+            string nameSort = Console.ReadLine();
+            Console.Write("Sort students ascending(a) or descending(d) (leave blank for default)? ");
+            string sortInput = Console.ReadLine();
+
+            switch (nameSort)
+            {
+                case "f" when sortInput == "d":
+                    return "StaffFirstName DESC";
+                case "f" when sortInput == "a":
+                    return "StaffFirstName ASC";
+                case "l" when sortInput == "d":
+                    return "StaffLastName DESC";
+                default:
+                    return "StaffLastName ASC";
+            }
+        }
+
+        private static string GetSortByRole()
+        {
+            StringBuilder str = new StringBuilder("WHERE Role = ");
+            Console.WriteLine("Select category:");
+            Console.WriteLine("1. Principal" +
+                "\n2. Administrator" +
+                "\n3. Teacher" +
+                "\n4. View all staff");
+            while (true)
+            {
+                Console.Write("Enter choice: ");
+                string input = Console.ReadLine();
+                switch (input)
+                {
+                    case "1":
+                        return str + "'Principal'";
+                    case "2":
+                        return str + "'Administrator'";
+                    case "3":
+                        return str + "'Teacher'";
+                    case "4":
+                        return "";
+                    default:
+                        Console.WriteLine("Invalind input. Try again.");
+                        break;
+                }
+            }
         }
     }
 }

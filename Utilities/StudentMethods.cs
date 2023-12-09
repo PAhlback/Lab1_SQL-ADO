@@ -1,9 +1,11 @@
 ﻿using Lab1_SQL.Models;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
+using System.Threading.Channels;
 using System.Threading.Tasks;
 
 namespace Lab1_SQL.Utilities
@@ -17,38 +19,30 @@ namespace Lab1_SQL.Utilities
             {
                 connection.Open();
 
-                using (SqlCommand command = new SqlCommand($"SELECT * FROM StudentList", connection))
+                // Gets the sorting. Was unable to get this to work with Parameters.AddWithValue() inside the SqlCommands using statement.
+                // Kept getting the below exception:
+                /* 
+                 * The SELECT item identified by the ORDER BY number 1 contains a variable as part of the expression identifying a column position. 
+                 * Variables are only allowed when ordering by an expression referencing a column name
+                 */
+                // This method doesn't allow users to enter input by themselves, it is handled with options (so hopefully no SQL Injections).
+                string sort = GetSorting();
+
+                // Gets everything from the view StudentList.
+                using (SqlCommand command = new SqlCommand($"SELECT * FROM StudentList ORDER BY {sort}", connection))
                 {
                     using (SqlDataReader reader = command.ExecuteReader())
                     {
-                        List<Student> students = new List<Student>();
-
                         while (reader.Read())
                         {
+                            Console.WriteLine($"\t{reader.GetString(1)}, {reader.GetString(0)} {reader.GetString(2)}" +
+                                $"\n\tAddress: {reader.GetString(3)}" +
+                                $"\n\tPhone: {reader.GetString(4)}");
                             if (!reader.IsDBNull(5))
                             {
-                                students.Add(new Student(reader.GetString(0), reader.GetString(1), reader.GetString(2), reader.GetString(3),
-                                reader.GetString(4), reader.GetInt32(5)));
+                                Console.WriteLine($"\tClass: Class{reader.GetInt32(5)}");
                             }
-                            else
-                            {
-                                students.Add(new Student(reader.GetString(0), reader.GetString(1), reader.GetString(2), reader.GetString(3),
-                                reader.GetString(4)));
-                            }
-                        }
-
-                        students = SortByName(students);
-
-                        foreach (Student st in students) 
-                        {
-                            Console.WriteLine($"\t{st.LastName}, {st.FirstName} {st.SSN}" +
-                                $"\n\tAddress: {st.Address}" +
-                                $"\n\tPhone: {st.PhoneNo}");
-                            if (!string.IsNullOrEmpty(st.Class.ToString()))
-                            {
-                                Console.WriteLine($"\tClass: Class{st.Class}");
-                            }
-                            Console.WriteLine("\t=============================");
+                            Console.WriteLine("\t====================");
                         }
                     }
                 }
@@ -64,9 +58,9 @@ namespace Lab1_SQL.Utilities
                 connection.Open();
                 using (SqlCommand command = new SqlCommand($"SELECT * FROM Classes", connection))
                 {
-                    //command.Parameters.AddWithValue();
                     using (SqlDataReader reader = command.ExecuteReader())
                     {
+                        // Using an int in the while loop to print the list of classes.
                         int i = 1;
                         while (reader.Read())
                         {
@@ -74,13 +68,31 @@ namespace Lab1_SQL.Utilities
                             i++;
                         }
                     }
-                    Console.Write("Select class by number: ");
-                    string choice = Console.ReadLine();
+                    
+                    // Lets user input which class to show students from. Currently only checks that input is digits, not valid class.
+                    string choice = string.Empty;
+                    while (true)
+                    {
+                        Console.Write("Select class by number: ");
+                        choice = Console.ReadLine();
+                        if (CheckForDigits(choice))
+                        {
+                            break;
+                        }
+                        else
+                        {
+                            Console.WriteLine("Invalid input. Try again.");
+                        }
+                    }
 
-                    using (SqlCommand com = new SqlCommand($"SELECT * FROM StudentList WHERE Class = '{choice}'", connection))
+                    // Same sort method as in ShowAllStudents() method.
+                    string sort = GetSorting();                   
+
+                    using (SqlCommand com = new SqlCommand($"SELECT * FROM StudentList WHERE Class = '{choice}' ORDER BY {sort}", connection))
                     {
                         using (SqlDataReader r = com.ExecuteReader())
                         {
+                            // Using .HasRows in case the class doesn't have any students.
                             if (r.HasRows)
                             {
                                 while (r.Read())
@@ -170,7 +182,7 @@ namespace Lab1_SQL.Utilities
             return true;
         }
 
-        private static List<Student> SortByName(List<Student> students)
+        private static string GetSorting()
         {
             Console.Write("Sort by last(l) or first(f) name (leave blank for default)? ");
             string nameSort = Console.ReadLine();
@@ -180,13 +192,13 @@ namespace Lab1_SQL.Utilities
             switch (nameSort)
             {
                 case "f" when sortInput == "d":
-                    return students.OrderByDescending(s => s.FirstName).ToList();
+                    return "StudentFirstName DESC";
                 case "f" when sortInput == "a":
-                    return students.OrderBy(s => s.FirstName).ToList();
+                    return "StudentFirstName ASC";
                 case "l" when sortInput == "d":
-                    return students.OrderByDescending(s => s.LastName).ToList();
+                    return "StudentLastName DESC";
                 default:
-                    return students.OrderBy(s => s.LastName).ToList();
+                    return "StudentLastName ASC";
             }
         }
     }
