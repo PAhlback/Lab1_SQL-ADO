@@ -118,7 +118,7 @@ namespace Lab1_SQL.Utilities
         {
             Console.Write("Sort by last(l) or first(f) name (leave blank for default)? ");
             string nameSort = Console.ReadLine();
-            Console.Write("Sort students ascending(a) or descending(d) (leave blank for default)? ");
+            Console.Write("Sort staff ascending(a) or descending(d) (leave blank for default)? ");
             string sortInput = Console.ReadLine();
 
             switch (nameSort)

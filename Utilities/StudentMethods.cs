@@ -33,6 +33,7 @@ namespace Lab1_SQL.Utilities
                 {
                     using (SqlDataReader reader = command.ExecuteReader())
                     {
+                        Console.Clear();
                         while (reader.Read())
                         {
                             Console.WriteLine($"\t{reader.GetString(1)}, {reader.GetString(0)} {reader.GetString(2)}" +
@@ -86,12 +87,13 @@ namespace Lab1_SQL.Utilities
                     }
 
                     // Same sort method as in ShowAllStudents() method.
-                    string sort = GetSorting();                   
+                    string sort = GetSorting();
 
                     using (SqlCommand com = new SqlCommand($"SELECT * FROM StudentList WHERE Class = '{choice}' ORDER BY {sort}", connection))
                     {
                         using (SqlDataReader r = com.ExecuteReader())
                         {
+                            Console.Clear();
                             // Using .HasRows in case the class doesn't have any students.
                             if (r.HasRows)
                             {
